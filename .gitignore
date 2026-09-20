@@ -1,0 +1,24 @@
+node_modules/
+.next/
+out/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+.env
+.env.local
+.env*.local
+
+# Gelieferte Schriftbinärdateien: lokal für den Designabgleich verfügbar,
+# aber bewusst nicht im Repository und nicht im Build.
+assets/fonts-unlicensed/*.woff2
+
+# Ausgaben des visuellen Reviews
+screenshots/
+
+.DS_Store
+docs/private/
+
+# Plain wird lokal ausgeliefert, bleibt aber aus dem Repository heraus,
+# solange die Webfont-Lizenz nicht geklaert ist.
+public/fonts/

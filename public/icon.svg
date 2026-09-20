@@ -1,0 +1,20 @@
+<!-- Vorläufiges App-Symbol. Wird durch das echte Logo ersetzt. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="biolum" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3BE0D4"/>
+      <stop offset="52%" stop-color="#5B9DFF"/>
+      <stop offset="100%" stop-color="#A98BFF"/>
+    </linearGradient>
+    <radialGradient id="light" cx="0.3" cy="0" r="1">
+      <stop offset="0%" stop-color="#5B9DFF" stop-opacity="0.34"/>
+      <stop offset="100%" stop-color="#5B9DFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="512" height="512" rx="114" fill="#000000"/>
+  <rect width="512" height="512" rx="114" fill="url(#light)"/>
+  <text x="256" y="262" fill="url(#biolum)"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif"
+        font-size="290" font-weight="700" letter-spacing="-14"
+        text-anchor="middle" dominant-baseline="central">D</text>
+</svg>

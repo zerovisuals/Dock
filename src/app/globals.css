@@ -1,0 +1,616 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Dock – Gestaltungssystem
+   --------------------------------------------------------------------------
+   Hell zuerst: weiße Flächen auf hellem Grau, großzügige Radien, weiche
+   geschichtete Schatten, Daten als Hauptdarsteller. Die dunkle Fassung folgt
+   der Systemeinstellung und ist dieselbe Ordnung mit umgekehrten Werten.
+
+   Abstände folgen einer Leiter: 4 8 12 16 20 24 32 40 48. Nichts dazwischen.
+   ========================================================================== */
+
+@font-face {
+  font-family: "Plain";
+  src: url("/fonts/plain-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Plain";
+  src: url("/fonts/plain-600.woff2") format("woff2");
+  /* Die gelieferte Datei deklariert 600, nicht 500. */
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Plain";
+  src: url("/fonts/plain-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --font-text: "Plain", -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    system-ui, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Plain", -apple-system, BlinkMacSystemFont, "SF Pro Display",
+    system-ui, "Helvetica Neue", Arial, sans-serif;
+
+  /* Akzent – Tiefsee, auf Hell abgestimmt */
+  --color-accent: #2f6be0;
+  --color-accent-strong: #2557c4;
+  --color-teal: #0e9f9f;
+  --color-violet: #6b4bd6;
+
+  --radius-control: 16px;
+  --radius-card: 28px;
+  --radius-field: 14px;
+  --radius-pill: 999px;
+}
+
+/* --------------------------------------------------------------------------
+   Farbwerte – helle Fassung
+   -------------------------------------------------------------------------- */
+
+:root {
+  --bg: #f3f3f1;
+  --surface: #ffffff;
+  --surface-sunken: #f4f4f2;
+  --surface-contrast: #0e1217;
+
+  --ink: #0b0f14;
+  --ink-body: #363c44;
+  --ink-muted: #6a727c;
+  --ink-faint: #9aa2ac;
+  --on-accent: #ffffff;
+  --on-contrast: #ffffff;
+
+  --line: rgba(11, 15, 20, 0.07);
+  --line-strong: rgba(11, 15, 20, 0.12);
+
+  --accent: #2f6be0;
+  --accent-soft: #eaf1fe;
+  --accent-ink: #1d4ea8;
+
+  --danger: #d33a3a;
+  --danger-soft: #fdeded;
+  --warn: #9a6400;
+  --warn-soft: #fdf4e3;
+  --ok: #14794f;
+  --ok-soft: #e8f6ef;
+
+  /**
+   * Schatten.
+   *
+   * Jeder Schatten ist geschichtet: eine enge Lage für die Kante, eine
+   * mittlere für die Form, eine weite für den Raum. Alle mit Versatz nach
+   * unten – Licht kommt von oben.
+   */
+  --shadow-xs: 0 1px 2px rgba(11, 15, 20, 0.05);
+  --shadow-sm:
+    0 1px 2px rgba(11, 15, 20, 0.04),
+    0 2px 6px rgba(11, 15, 20, 0.05);
+  --shadow-md:
+    0 1px 2px rgba(11, 15, 20, 0.03),
+    0 4px 10px rgba(11, 15, 20, 0.04),
+    0 10px 24px rgba(11, 15, 20, 0.05);
+  --shadow-lg:
+    0 2px 4px rgba(11, 15, 20, 0.03),
+    0 8px 20px rgba(11, 15, 20, 0.05),
+    0 24px 48px rgba(11, 15, 20, 0.07);
+  --shadow-accent:
+    0 2px 6px rgba(47, 107, 224, 0.22),
+    0 8px 20px rgba(47, 107, 224, 0.24);
+
+  --gradient-accent: linear-gradient(180deg, #4c8dff 0%, #2f6be0 100%);
+}
+
+/* --------------------------------------------------------------------------
+   Farbwerte – dunkle Fassung, nach der Einstellung des Systems
+   -------------------------------------------------------------------------- */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a0d11;
+    --surface: #14191f;
+    --surface-sunken: #0f1419;
+    --surface-contrast: #f2f4f7;
+
+    --ink: #f3f6f9;
+    --ink-body: #ccd4dd;
+    --ink-muted: #949ea9;
+    --ink-faint: #6c757f;
+    --on-contrast: #0b0f14;
+
+    --line: rgba(255, 255, 255, 0.08);
+    --line-strong: rgba(255, 255, 255, 0.14);
+
+    --accent: #6ba2ff;
+    --accent-soft: rgba(107, 162, 255, 0.14);
+    --accent-ink: #a8c8ff;
+
+    --danger: #ff8080;
+    --danger-soft: rgba(255, 128, 128, 0.13);
+    --warn: #f0b95f;
+    --warn-soft: rgba(240, 185, 95, 0.13);
+    --ok: #5ed3a0;
+    --ok-soft: rgba(94, 211, 160, 0.13);
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-sm:
+      0 1px 2px rgba(0, 0, 0, 0.4),
+      0 2px 6px rgba(0, 0, 0, 0.35);
+    --shadow-md:
+      0 1px 2px rgba(0, 0, 0, 0.4),
+      0 4px 10px rgba(0, 0, 0, 0.4),
+      0 10px 24px rgba(0, 0, 0, 0.45);
+    --shadow-lg:
+      0 2px 4px rgba(0, 0, 0, 0.4),
+      0 8px 20px rgba(0, 0, 0, 0.45),
+      0 24px 48px rgba(0, 0, 0, 0.55);
+    --shadow-accent:
+      0 2px 6px rgba(76, 141, 255, 0.28),
+      0 8px 20px rgba(76, 141, 255, 0.26);
+
+    --gradient-accent: linear-gradient(180deg, #5b9aff 0%, #3a74e8 100%);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0a0d11;
+  --surface: #14191f;
+  --surface-sunken: #0f1419;
+  --surface-contrast: #f2f4f7;
+  --ink: #f3f6f9;
+  --ink-body: #ccd4dd;
+  --ink-muted: #949ea9;
+  --ink-faint: #6c757f;
+  --on-contrast: #0b0f14;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.14);
+  --accent: #6ba2ff;
+  --accent-soft: rgba(107, 162, 255, 0.14);
+  --accent-ink: #a8c8ff;
+  --danger: #ff8080;
+  --danger-soft: rgba(255, 128, 128, 0.13);
+  --warn: #f0b95f;
+  --warn-soft: rgba(240, 185, 95, 0.13);
+  --ok: #5ed3a0;
+  --ok-soft: rgba(94, 211, 160, 0.13);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.35);
+  --shadow-md:
+    0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.4),
+    0 10px 24px rgba(0, 0, 0, 0.45);
+  --shadow-lg:
+    0 2px 4px rgba(0, 0, 0, 0.4), 0 8px 20px rgba(0, 0, 0, 0.45),
+    0 24px 48px rgba(0, 0, 0, 0.55);
+  --shadow-accent:
+    0 2px 6px rgba(76, 141, 255, 0.28), 0 8px 20px rgba(76, 141, 255, 0.26);
+  --gradient-accent: linear-gradient(180deg, #5b9aff 0%, #3a74e8 100%);
+}
+
+/* --------------------------------------------------------------------------
+   Grundlagen
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--ink-body);
+  font-family: var(--font-text);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+  color: inherit;
+}
+input,
+select,
+textarea {
+  font-size: max(1rem, 0.9375rem);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Typografie
+   --------------------------------------------------------------------------
+   Plain trägt die Identität. Laufweite ist größenabhängig: große Grade eng,
+   kleine Grade offen.
+   -------------------------------------------------------------------------- */
+
+.t-display {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 9vw, 3.75rem);
+  line-height: 0.95;
+  letter-spacing: -0.038em;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/** Daten als Hauptdarsteller: Uhrzeiten, Zähler, Kürzel. */
+.t-data {
+  font-family: var(--font-display);
+  font-size: 2.125rem;
+  line-height: 1;
+  letter-spacing: -0.035em;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.t-data-lg {
+  font-family: var(--font-display);
+  font-size: 2.75rem;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.t-section {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.t-title {
+  font-family: var(--font-display);
+  font-size: 1.1875rem;
+  line-height: 1.22;
+  letter-spacing: -0.022em;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.t-heading {
+  font-size: 1rem;
+  line-height: 1.32;
+  letter-spacing: -0.014em;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.t-body {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--ink-body);
+}
+
+.t-small {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--ink-muted);
+}
+
+/** Die kleine Beschriftung über einem Wert. Keine Versalien, kein Sperrsatz. */
+.t-label {
+  font-size: 0.75rem;
+  line-height: 1.3;
+  font-weight: 400;
+  color: var(--ink-muted);
+}
+
+.t-caption {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: var(--ink-muted);
+}
+
+.t-num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* --------------------------------------------------------------------------
+   Flächen
+   -------------------------------------------------------------------------- */
+
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-md);
+}
+
+.card-flat {
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.card-raised {
+  background: var(--surface);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-lg);
+}
+
+.sunken {
+  background: var(--surface-sunken);
+  border-radius: var(--radius-field);
+}
+
+.dock-divided > * + * {
+  border-top: 1px solid var(--line);
+}
+
+/* --------------------------------------------------------------------------
+   Bedienelemente
+   -------------------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0 1.25rem;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform 140ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 160ms ease-out,
+    background-color 160ms ease-out;
+}
+.btn:active {
+  transform: scale(0.975);
+}
+.btn[disabled],
+.btn[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/** Die Hauptaktion: volle Breite, Verlauf, farbiger Schatten. */
+.btn-primary {
+  background-image: var(--gradient-accent);
+  color: var(--on-accent);
+  box-shadow: var(--shadow-accent);
+}
+.btn-primary:hover {
+  filter: brightness(1.05);
+}
+
+.btn-block {
+  width: 100%;
+  min-height: 3.25rem;
+  border-radius: var(--radius-pill);
+  font-size: 1rem;
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.btn-quiet {
+  background: transparent;
+  color: var(--ink-muted);
+  box-shadow: none;
+}
+.btn-quiet:hover {
+  background: var(--surface-sunken);
+  color: var(--ink);
+}
+
+.btn-danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+  box-shadow: none;
+}
+
+/** Runde Symboltaste, wie im Referenzbild oben links und rechts. */
+.btn-round {
+  width: 2.75rem;
+  height: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (pointer: fine) {
+  .btn {
+    min-height: 2.375rem;
+    font-size: 0.875rem;
+  }
+  .btn-block {
+    min-height: 3rem;
+  }
+  .btn-round {
+    width: 2.375rem;
+    height: 2.375rem;
+    min-height: 2.375rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Sichere Bereiche und Hilfsklassen
+   -------------------------------------------------------------------------- */
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --------------------------------------------------------------------------
+   Browser-Oberflächen
+   -------------------------------------------------------------------------- */
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+html {
+  caret-color: var(--accent);
+  accent-color: var(--accent);
+  scrollbar-color: var(--line-strong) transparent;
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+  border-radius: 999px;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 0.22em;
+  text-decoration-thickness: 1px;
+}
+
+table,
+time,
+[data-numeric] {
+  font-variant-numeric: tabular-nums;
+}
+
+::placeholder {
+  color: var(--ink-faint);
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Flächen von unten
+   -------------------------------------------------------------------------- */
+
+.dock-sheet {
+  animation: dock-sheet-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes dock-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 640px) {
+  .dock-sheet {
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock-sheet {
+    animation: none;
+  }
+}
+
+:root {
+  --bottom-nav-height: 64px;
+}
+
+/* Eingabefelder: ruhig gefüllt, beim Fokus weiß mit farbiger Kante. */
+.dock-input {
+  background: var(--surface-sunken);
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-field);
+  color: var(--ink);
+  transition:
+    background-color 140ms ease-out,
+    border-color 140ms ease-out;
+}
+.dock-input:focus {
+  background: var(--surface);
+  border-color: var(--accent);
+  outline: none;
+}
+
+/* Auswahl-Chips. Auf Touch mindestens 44px hoch, am Zeiger darf es enger
+   sein. */
+.dock-chip {
+  min-height: 44px;
+}
+@media (pointer: fine) {
+  .dock-chip {
+    min-height: 34px;
+  }
+}
+
+/* Datumsfelder brauchen ihre Eigenbreite – sonst laufen zwei nebeneinander
+   auf schmalen Schirmen über den Rand. */
+.dock-input[type="date"],
+.dock-input[type="time"],
+.dock-input[type="datetime-local"] {
+  min-width: 0;
+  width: 100%;
+}

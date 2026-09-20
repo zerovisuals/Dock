@@ -1,0 +1,16 @@
+{
+  "name": "Dock – Dein Schultag, an einem Ort",
+  "short_name": "Dock",
+  "description": "Stundenplan, Notizen, Hausuebungen und das Klassengedaechtnis an der Stunde, zu der sie gehoeren.",
+  "lang": "de-AT",
+  "dir": "ltr",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
