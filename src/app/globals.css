@@ -421,6 +421,15 @@ textarea {
   filter: brightness(1.05);
 }
 
+/* Form und Höhe einer großen Taste – ohne Aussage über die Breite. */
+.btn-pill {
+  min-height: 3.25rem;
+  border-radius: var(--radius-pill);
+  font-size: 1rem;
+  padding-inline: 2rem;
+}
+
+/* Volle Breite. Bewusst getrennt, damit sie sich abschalten lässt. */
 .btn-block {
   width: 100%;
   min-height: 3.25rem;
@@ -466,7 +475,8 @@ textarea {
     min-height: 2.375rem;
     font-size: 0.875rem;
   }
-  .btn-block {
+  .btn-block,
+  .btn-pill {
     min-height: 3rem;
   }
   .btn-round {
