@@ -22,8 +22,8 @@ const BLOB_STORE = "blobs";
 
 type AnyRecord = { id: string };
 
-async function open(): Promise<IDBPDatabase> {
-  return openDB(DATABASE_NAME, DATABASE_VERSION, {
+async function open(name: string): Promise<IDBPDatabase> {
+  return openDB(name, DATABASE_VERSION, {
     upgrade(db) {
       for (const name of COLLECTION_NAMES) {
         if (!db.objectStoreNames.contains(name)) {
@@ -41,9 +41,22 @@ export class IndexedDbRepository implements Repository {
   readonly mode: StorageMode = "lokal";
   private handle: Promise<IDBPDatabase> | null = null;
 
+  /**
+   * Der Name der Datenbank ist einstellbar. Im Betrieb ist er immer derselbe;
+   * Tests koennen so nebeneinander laufen, ohne sich zu stoeren.
+   */
+  constructor(private readonly name: string = DATABASE_NAME) {}
+
   private db(): Promise<IDBPDatabase> {
-    if (!this.handle) this.handle = open();
+    if (!this.handle) this.handle = open(this.name);
     return this.handle;
+  }
+
+  /** Schliesst die Verbindung. Wird im Betrieb nicht gebraucht. */
+  async close(): Promise<void> {
+    if (!this.handle) return;
+    (await this.handle).close();
+    this.handle = null;
   }
 
   async list<K extends CollectionName>(name: K): Promise<Collections[K][]> {
