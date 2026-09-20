@@ -105,7 +105,13 @@ export function LessonRow({
       href={`/app/stunde/${block.lessons[0]?.id ?? ""}`}
       className="flex min-h-[64px] items-center gap-4 px-5 py-3"
       style={{
-        background: current ? "var(--accent-soft)" : "transparent",
+        // Jede Zeile trägt einen Hauch ihrer Fachfarbe. Die laufende Stunde
+        // bekommt den Akzent, damit sie sich klar abhebt.
+        background: current
+          ? "var(--accent-soft)"
+          : cancelled
+            ? "transparent"
+            : `color-mix(in srgb, ${course?.accent ?? "#8A8A8A"} 6%, transparent)`,
       }}
     >
       {/* Die Zeit steht als Spalte, damit das Auge nicht springt. */}
@@ -123,11 +129,19 @@ export function LessonRow({
 
       <span
         aria-hidden
-        className="h-9 w-[3px] shrink-0 rounded-full"
+        className="flex h-9 w-11 shrink-0 items-center justify-center rounded-[10px] text-[0.6875rem] font-bold"
         style={{
-          background: cancelled ? "var(--line-strong)" : (course?.accent ?? "#8A8A8A"),
+          background: cancelled
+            ? "var(--surface-sunken)"
+            : `color-mix(in srgb, ${course?.accent ?? "#8A8A8A"} 17%, var(--surface))`,
+          color: cancelled ? "var(--ink-faint)" : (course?.accent ?? "#8A8A8A"),
+          boxShadow: cancelled
+            ? undefined
+            : `inset 2.5px 0 0 0 ${course?.accent ?? "#8A8A8A"}`,
         }}
-      />
+      >
+        {course?.shortLabel ?? "?"}
+      </span>
 
       <span className="min-w-0 flex-1">
         <span

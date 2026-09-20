@@ -614,3 +614,108 @@ time,
   min-width: 0;
   width: 100%;
 }
+
+/* --------------------------------------------------------------------------
+   Willkommen
+   --------------------------------------------------------------------------
+   Der Einstieg darf Farbe tragen. Die Fläche ist der Auftritt – danach wird
+   die App wieder ruhig.
+   -------------------------------------------------------------------------- */
+
+.onb-screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/**
+ * Der erste Schirm.
+ *
+ * Kein platter Verlauf, sondern mehrere weiche Lichtquellen übereinander –
+ * so bekommt die Fläche Tiefe, ohne Muster oder Textur zu brauchen.
+ */
+.onb-splash {
+  position: relative;
+  overflow: hidden;
+  background-color: #1c2f8a;
+  background-image:
+    radial-gradient(90% 70% at 12% 4%, #2ec9bd 0%, transparent 58%),
+    radial-gradient(85% 65% at 92% 10%, #7b52e8 0%, transparent 60%),
+    radial-gradient(120% 90% at 50% 105%, #16215e 0%, transparent 70%),
+    linear-gradient(168deg, #1b8fd6 0%, #2f5fd0 44%, #5b3fc4 100%);
+}
+
+/* Ein heller Schein oben – das Licht, das auf die Kachel fällt. */
+.onb-splash::before {
+  content: "";
+  position: absolute;
+  inset: -34% -20% auto -20%;
+  height: 78%;
+  background: radial-gradient(
+    46% 58% at 30% 6%,
+    rgba(255, 255, 255, 0.46) 0%,
+    transparent 72%
+  );
+  pointer-events: none;
+}
+
+/* Und ein dunkler Grund unten, damit die Tasten stehen. */
+.onb-splash::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 -10% 0;
+  height: 46%;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(10, 18, 58, 0.42) 100%
+  );
+  pointer-events: none;
+}
+
+/* Die Kachel des Symbols: heller Rand oben, weicher farbiger Schatten. */
+.onb-tile {
+  background: #ffffff;
+  border-radius: 30px;
+  box-shadow:
+    0 2px 4px rgba(6, 22, 60, 0.2),
+    0 14px 40px rgba(6, 22, 60, 0.34),
+    0 1px 0 rgba(255, 255, 255, 0.8) inset;
+}
+
+/**
+ * Die Vorschaufläche über der Überschrift.
+ *
+ * Sie sitzt auf einem eingefärbten Grund, damit der Schirm nicht nur aus
+ * Weiß auf Grau besteht.
+ */
+.onb-stage {
+  position: relative;
+  border-radius: 26px;
+  padding: 18px;
+  background-image: linear-gradient(
+    158deg,
+    color-mix(in srgb, var(--accent) 16%, transparent) 0%,
+    color-mix(in srgb, #6b4bd6 13%, transparent) 100%
+  );
+}
+
+.onb-stage-inner {
+  background: var(--surface);
+  border-radius: 18px;
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+/* Fortschrittspunkte. */
+.onb-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--line-strong);
+  transition: width 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.onb-dot[data-active="true"] {
+  width: 24px;
+  background-image: var(--gradient-accent);
+}

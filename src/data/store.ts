@@ -290,6 +290,51 @@ export class DockStore {
   }
 
   /* ---------------------------------------------------------------------
+     Schule und Klasse
+     --------------------------------------------------------------------- */
+
+  /**
+   * Setzt den Namen der Schule und der Klasse.
+   *
+   * Beides sind echte Felder des Datenmodells. Sie werden gespeichert und in
+   * Einstellungen und Export wieder ausgegeben. Eine Verbindung zu einem
+   * Schulsystem entsteht dadurch nicht.
+   */
+  async setSchoolAndClass(
+    schoolName: string,
+    className: string,
+  ): Promise<void> {
+    const [schools, classes] = await Promise.all([
+      this.repo.list("schools"),
+      this.repo.list("classes"),
+    ]);
+
+    const school = schools[0];
+    if (school && schoolName.trim() !== "") {
+      await this.repo.put("schools", { ...school, name: schoolName.trim() });
+    }
+
+    const schoolClass = classes[0];
+    if (schoolClass && className.trim() !== "") {
+      await this.repo.put("classes", {
+        ...schoolClass,
+        name: className.trim(),
+      });
+    }
+  }
+
+  async schoolAndClass(): Promise<{ school: string; klasse: string }> {
+    const [schools, classes] = await Promise.all([
+      this.repo.list("schools"),
+      this.repo.list("classes"),
+    ]);
+    return {
+      school: schools[0]?.name ?? "",
+      klasse: classes[0]?.name ?? "",
+    };
+  }
+
+  /* ---------------------------------------------------------------------
      Stundenplan ändern
      --------------------------------------------------------------------- */
 

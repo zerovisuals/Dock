@@ -55,6 +55,7 @@ import {
   weekdayName,
 } from "@/domain/time";
 import { QuickCapture } from "@/ui/QuickCapture";
+import { AufgabenZeile } from "@/ui/AufgabenZeile";
 
 export default function HeutePage() {
   const { snapshot, status, today, now, nowTime, userId } = useDock();
@@ -224,7 +225,7 @@ export default function HeutePage() {
             .map((task) => (
               <AufgabenZeile
                 key={task.entry.id}
-                entryId={task.entry.id}
+                entry={task.entry}
                 overdue={task.overdue}
               />
             ))}
@@ -435,58 +436,5 @@ function StundeZeile({ block, current }: { block: LessonBlock; current: boolean 
         </>
       }
     />
-  );
-}
-
-function AufgabenZeile({ entryId, overdue }: { entryId: string; overdue?: boolean }) {
-  const { snapshot, userId, mutate, today } = useDock();
-  const entry = snapshot.entries.find((e) => e.id === entryId);
-  if (!entry) return null;
-
-  const version = currentVersion(snapshot, entry);
-  const course = courseOf(snapshot, entry.courseId);
-  const resolution = latestResolution(snapshot, entry.id);
-  const state = taskStateOf(snapshot, entry.id, userId);
-
-  return (
-    <div className="flex items-start gap-3 px-4 py-3">
-      <button
-        type="button"
-        role="checkbox"
-        aria-checked={state?.done ?? false}
-        aria-label={`${version?.text ?? "Aufgabe"} als erledigt markieren`}
-        onClick={() => mutate((s) => s.setTaskDone(entry.id, !(state?.done ?? false)))}
-        className="mt-0.5 flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[6px]"
-        style={{
-          border: state?.done
-            ? "1.5px solid transparent"
-            : "1.5px solid rgba(130,180,235,0.3)",
-          backgroundImage: state?.done ? "var(--gradient-accent)" : undefined,
-          background: state?.done ? undefined : "var(--surface-sunken)",
-        }}
-      >
-        {state?.done && (
-          <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="var(--on-accent)" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-            <path d="M4.5 10.5l3.5 3.5 8-8.5" />
-          </svg>
-        )}
-      </button>
-
-      <div className="min-w-0 flex-1">
-        <p className="text-[0.9375rem] leading-[1.4]" style={{ color: "var(--ink)" }}>
-          {version?.text}
-        </p>
-        <p className="t-caption mt-0.5">
-          {course?.displayName}
-          {resolution?.state === "aufgeloest" && resolution.targetDate && (
-            <> · fällig {describeDateRelative(resolution.targetDate, today)}</>
-          )}
-          {resolution?.state === "offen" && <> · Nächste Stunde noch nicht geplant</>}
-          {resolution?.state === "pruefen" && <> · Ziel prüfen</>}
-        </p>
-      </div>
-
-      {overdue && <Badge tone="overdue">Überfällig</Badge>}
-    </div>
   );
 }
