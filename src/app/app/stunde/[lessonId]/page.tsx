@@ -38,6 +38,7 @@ import {
 import { QuickCapture } from "@/ui/QuickCapture";
 import { StundeBearbeiten } from "@/ui/StundeBearbeiten";
 import { formatFileSize } from "@/data/repository";
+import { KlassenEintragFuss } from "@/ui/KlassenEintrag";
 import type { Entry } from "@/domain/types";
 import {
   compareDates,
@@ -437,6 +438,8 @@ function EintragZeile({ entry }: { entry: Entry }) {
         {(version?.revision ?? 1) > 1 && (
           <p className="t-caption mt-1.5">Fassung {version?.revision}</p>
         )}
+
+        <KlassenEintragFuss entry={entry} />
       </div>
 
       <button

@@ -41,8 +41,11 @@ import type {
   Assessment,
   AssessmentKind,
   Audience,
+  Confirmation,
+  CorrectionProposal,
   Course,
   DocumentLink,
+  Invite,
   DueResolution,
   DueRule,
   Entry,
@@ -73,6 +76,22 @@ export function newId(): Uuid {
   });
 }
 
+/**
+ * Ein Einladungscode aus gut unterscheidbaren Zeichen.
+ *
+ * Ohne 0/O und 1/I/L, damit niemand ihn falsch abtippt. Der Code allein
+ * genügt nicht: er läuft ab und kann eine Freigabe erfordern.
+ */
+function inviteCode(): string {
+  const zeichen = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < 8; i += 1) {
+    if (i === 4) code += "-";
+    code += zeichen[Math.floor(Math.random() * zeichen.length)];
+  }
+  return code;
+}
+
 function nowStamp(): Timestamp {
   return new Date().toISOString();
 }
@@ -91,6 +110,9 @@ export interface DockSnapshot {
   assessments: Assessment[];
   documents: StoredDocument[];
   documentLinks: DocumentLink[];
+  confirmations: Confirmation[];
+  corrections: CorrectionProposal[];
+  invites: Invite[];
   missedIntervals: MissedInterval[];
   materializedUntil: LocalDate | null;
   seeded: boolean;
@@ -109,6 +131,9 @@ const EMPTY_SNAPSHOT: DockSnapshot = {
   assessments: [],
   documents: [],
   documentLinks: [],
+  confirmations: [],
+  corrections: [],
+  invites: [],
   missedIntervals: [],
   materializedUntil: null,
   seeded: false,
@@ -142,6 +167,9 @@ export class DockStore {
       assessments,
       documents,
       documentLinks,
+      confirmations,
+      corrections,
+      invites,
       missedIntervals,
       settings,
     ] = await Promise.all([
@@ -157,6 +185,9 @@ export class DockStore {
       this.repo.list("assessments"),
       this.repo.list("documents"),
       this.repo.list("documentLinks"),
+      this.repo.list("confirmations"),
+      this.repo.list("corrections"),
+      this.repo.list("invites"),
       this.repo.list("missedIntervals"),
       this.repo.get("settings", "settings"),
     ]);
@@ -174,6 +205,9 @@ export class DockStore {
       assessments,
       documents,
       documentLinks,
+      confirmations,
+      corrections,
+      invites,
       missedIntervals,
       materializedUntil: settings?.materializedUntil ?? null,
       seeded: settings?.seededAt != null,
@@ -961,6 +995,144 @@ export class DockStore {
   }
 
   /* ---------------------------------------------------------------------
+     Geteiltes Klassengedächtnis
+     --------------------------------------------------------------------- */
+
+  /**
+   * Bestätigt genau eine Fassung.
+   *
+   * Eine Bestätigung sagt: "So war es, in dieser Fassung." Wird der Text
+   * später geändert, bleibt sie als Historie stehen und gilt nicht für die
+   * neue Fassung. Es werden keine Zahlen erfunden – gezählt wird, was
+   * tatsächlich bestätigt wurde.
+   */
+  async confirmVersion(entryId: Uuid, versionId: Uuid): Promise<void> {
+    const vorhandene = (await this.repo.list("confirmations")).find(
+      (c) => c.versionId === versionId && c.userId === this.userId,
+    );
+    if (vorhandene) return;
+
+    await this.repo.put("confirmations", {
+      id: newId(),
+      entryId,
+      versionId,
+      userId: this.userId,
+      createdAt: nowStamp(),
+    });
+  }
+
+  async withdrawConfirmation(versionId: Uuid): Promise<void> {
+    const vorhandene = (await this.repo.list("confirmations")).find(
+      (c) => c.versionId === versionId && c.userId === this.userId,
+    );
+    if (vorhandene) await this.repo.remove("confirmations", vorhandene.id);
+  }
+
+  /**
+   * Schlägt eine Korrektur vor.
+   *
+   * Der Vorschlag ändert nichts. Er macht sichtbar, dass jemand den Inhalt
+   * anders in Erinnerung hat – ein Widerspruch, den andere sehen sollen.
+   */
+  async proposeCorrection(
+    entryId: Uuid,
+    versionId: Uuid,
+    proposedText: string,
+    rationale: string | null,
+  ): Promise<CorrectionProposal> {
+    const vorschlag: CorrectionProposal = {
+      id: newId(),
+      entryId,
+      versionId,
+      proposedText,
+      rationale,
+      authorId: this.userId,
+      state: "offen",
+      createdAt: nowStamp(),
+      resolvedAt: null,
+    };
+    await this.repo.put("corrections", vorschlag);
+    return vorschlag;
+  }
+
+  /**
+   * Übernimmt einen Vorschlag.
+   *
+   * Dabei entsteht eine neue Fassung. Bisherige Bestätigungen bleiben an
+   * ihrer Fassung und gelten nicht für die neue.
+   */
+  async acceptCorrection(proposalId: Uuid): Promise<void> {
+    const vorschlag = await this.repo.get("corrections", proposalId);
+    if (!vorschlag || vorschlag.state !== "offen") return;
+
+    await this.reviseEntry(
+      vorschlag.entryId,
+      vorschlag.proposedText,
+      null,
+      vorschlag.rationale ?? "Korrekturvorschlag übernommen",
+    );
+
+    await this.repo.put("corrections", {
+      ...vorschlag,
+      state: "uebernommen",
+      resolvedAt: nowStamp(),
+    });
+  }
+
+  async rejectCorrection(proposalId: Uuid): Promise<void> {
+    const vorschlag = await this.repo.get("corrections", proposalId);
+    if (!vorschlag || vorschlag.state !== "offen") return;
+    await this.repo.put("corrections", {
+      ...vorschlag,
+      state: "abgelehnt",
+      resolvedAt: nowStamp(),
+    });
+  }
+
+  /**
+   * Legt eine Einladung an.
+   *
+   * Sie läuft ab, lässt sich zurücknehmen und hat eine begrenzte Zahl an
+   * Einlösungen. Das Erraten eines Klassennamens gewährt keinen Zugang.
+   */
+  async createInvite(options?: {
+    gueltigTage?: number;
+    maxUses?: number;
+    requiresApproval?: boolean;
+  }): Promise<Invite> {
+    const classes = await this.repo.list("classes");
+    const klasse = classes[0];
+    if (!klasse) throw new Error("Keine Klasse vorhanden.");
+
+    const tage = options?.gueltigTage ?? 7;
+    const ablauf = new Date(Date.now() + tage * 86_400_000);
+
+    const einladung: Invite = {
+      id: newId(),
+      classId: klasse.id,
+      code: inviteCode(),
+      createdBy: this.userId,
+      expiresAt: ablauf.toISOString(),
+      revokedAt: null,
+      maxUses: options?.maxUses ?? 5,
+      uses: 0,
+      requiresApproval: options?.requiresApproval ?? true,
+      createdAt: nowStamp(),
+    };
+    await this.repo.put("invites", einladung);
+    return einladung;
+  }
+
+  async revokeInvite(inviteId: Uuid): Promise<void> {
+    const einladung = await this.repo.get("invites", inviteId);
+    if (!einladung || einladung.revokedAt !== null) return;
+    await this.repo.put("invites", {
+      ...einladung,
+      revokedAt: nowStamp(),
+    });
+  }
+
+  /* ---------------------------------------------------------------------
      Nachholen
      --------------------------------------------------------------------- */
 
@@ -1222,3 +1394,49 @@ export function currentAndNext(
 }
 
 export { startOfWeek, weekDates, addDays, type Weekday };
+
+
+/* -------------------------------------------------------------------------
+   Geteiltes: Abfragen
+   ------------------------------------------------------------------------- */
+
+/** Wer hat die aktuell gültige Fassung bestätigt? Gezählt wird nur Echtes. */
+export function confirmationsForCurrentVersion(
+  snapshot: DockSnapshot,
+  entry: Entry,
+): Confirmation[] {
+  return snapshot.confirmations.filter(
+    (c) => c.versionId === entry.currentVersionId,
+  );
+}
+
+/**
+ * Bestätigungen, die sich auf frühere Fassungen beziehen.
+ *
+ * Sie bleiben Historie. Sie gelten ausdrücklich nicht für den heutigen Text.
+ */
+export function outdatedConfirmations(
+  snapshot: DockSnapshot,
+  entry: Entry,
+): Confirmation[] {
+  return snapshot.confirmations.filter(
+    (c) => c.entryId === entry.id && c.versionId !== entry.currentVersionId,
+  );
+}
+
+/** Offene Korrekturvorschläge – ein sichtbarer Widerspruch. */
+export function openCorrections(
+  snapshot: DockSnapshot,
+  entryId: Uuid,
+): CorrectionProposal[] {
+  return snapshot.corrections.filter(
+    (c) => c.entryId === entryId && c.state === "offen",
+  );
+}
+
+/** Ist eine Einladung jetzt noch einlösbar? */
+export function inviteIsUsable(invite: Invite, now: Date = new Date()): boolean {
+  if (invite.revokedAt !== null) return false;
+  if (invite.uses >= invite.maxUses) return false;
+  return new Date(invite.expiresAt).getTime() > now.getTime();
+}

@@ -26,6 +26,9 @@ import { useDock } from "@/data/DockContext";
 import { SOURCE_DOCUMENT_TITLE, UNSELECTED_OFFERINGS } from "@/domain/seed";
 import { PERIODS } from "@/domain/periods";
 import { formatDateLong, weekdayNameFor } from "@/domain/time";
+import { inviteIsUsable } from "@/data/store";
+import { sharedModeConfigured } from "@/data/supabase";
+import { GroupedList as Gruppe } from "@/ui/LessonList";
 
 type Thema = "system" | "hell" | "dunkel";
 
@@ -191,6 +194,10 @@ export default function EinstellungenPage() {
           „Klasse“ auf diesem Gerät.
         </Notice>
       </div>
+
+      {/* Klasse */}
+      <SectionTitle>Klasse</SectionTitle>
+      <KlassenAbschnitt />
 
       {/* Darstellung */}
       <SectionTitle>Darstellung</SectionTitle>
@@ -387,5 +394,95 @@ export default function EinstellungenPage() {
         Lehrpersonen.
       </p>
     </AppShell>
+  );
+}
+
+
+/**
+ * Klasse und Einladungen.
+ *
+ * Eine Einladung läuft ab, lässt sich zurücknehmen und hat eine begrenzte
+ * Zahl an Einlösungen. Solange kein Backend eingerichtet ist, wird das auch
+ * genau so gesagt – ein Code allein verbindet niemanden.
+ */
+function KlassenAbschnitt() {
+  const { snapshot, mutate } = useDock();
+  const geteilt = sharedModeConfigured();
+
+  const einladungen = [...snapshot.invites].sort((a, b) =>
+    b.createdAt.localeCompare(a.createdAt),
+  );
+
+  return (
+    <>
+      <div className="card px-6 py-6">
+        <p className="t-title">
+          {geteilt ? "Geteilter Betrieb eingerichtet" : "Noch niemand verbunden"}
+        </p>
+        <p className="t-small mt-2">
+          {geteilt
+            ? "Ein Backend ist hinterlegt. Geteilte Einträge erreichen die Mitglieder deiner Klasse."
+            : "Es ist kein Backend hinterlegt. Einladungen lassen sich erzeugen und verwalten, aber noch niemand kann sie einlösen – geteilte Einträge bleiben auf diesem Gerät."}
+        </p>
+
+        <button
+          type="button"
+          onClick={() => mutate((store) => store.createInvite())}
+          className="btn btn-secondary btn-block mt-5"
+        >
+          Einladung erzeugen
+        </button>
+        <p className="t-caption mt-3">
+          Gültig für sieben Tage, höchstens fünf Einlösungen, Freigabe
+          erforderlich. Das Erraten eines Klassennamens gewährt keinen Zugang.
+        </p>
+      </div>
+
+      {einladungen.length > 0 && (
+        <div className="mt-4">
+          <Gruppe label="Einladungen">
+            {einladungen.map((einladung) => {
+              const nutzbar = inviteIsUsable(einladung);
+              return (
+                <div
+                  key={einladung.id}
+                  className="flex items-center gap-4 px-5 py-4"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className="t-num text-[1rem] font-bold"
+                      style={{
+                        color: nutzbar ? "var(--ink)" : "var(--ink-faint)",
+                        textDecoration: nutzbar ? undefined : "line-through",
+                      }}
+                    >
+                      {einladung.code}
+                    </p>
+                    <p className="t-caption mt-0.5">
+                      {einladung.revokedAt !== null
+                        ? "Zurückgenommen"
+                        : nutzbar
+                          ? `Gültig bis ${formatDateLong(einladung.expiresAt.slice(0, 10))} · ${einladung.uses} von ${einladung.maxUses} eingelöst`
+                          : "Abgelaufen oder aufgebraucht"}
+                    </p>
+                  </div>
+                  {nutzbar && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        mutate((store) => store.revokeInvite(einladung.id))
+                      }
+                      className="btn btn-quiet"
+                    >
+                      Zurücknehmen
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </Gruppe>
+        </div>
+      )}
+    </>
   );
 }
