@@ -38,11 +38,15 @@ const DRAFT_PREFIX = "erfassen";
 export function QuickCapture({
   open,
   onClose,
+  onSaved,
   defaultLessonId,
   candidateBlocks,
 }: {
   open: boolean;
   onClose: () => void;
+  /** Meldet die gewählte Sichtbarkeit, damit der aufrufende Bildschirm den
+   *  neuen Eintrag auch zeigt und nicht hinter einem Reiter versteckt. */
+  onSaved?: (audience: Audience) => void;
   defaultLessonId: string | null;
   candidateBlocks: LessonBlock[];
 }) {
@@ -190,6 +194,7 @@ export function QuickCapture({
 
     await store.clearDraft(draftKey);
     setSaveState("gespeichert");
+    onSaved?.(audience);
     reset();
     onClose();
   }

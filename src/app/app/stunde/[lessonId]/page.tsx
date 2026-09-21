@@ -62,7 +62,7 @@ export default function StundePage() {
   const parameter = useParams<{ lessonId: string }>();
   const router = useRouter();
   const { snapshot, status, today } = useDock();
-  const [ansicht, setAnsicht] = useState<Ansicht>("klasse");
+  const [ansicht, setAnsichtRoh] = useState<Ansicht | null>(null);
   const [erfassen, setErfassen] = useState(false);
   const [bearbeiten, setBearbeiten] = useState(false);
 
@@ -153,7 +153,15 @@ export default function StundePage() {
 
   const klasseEintraege = eintraege.filter((e) => e.audience === "kurs");
   const privatEintraege = eintraege.filter((e) => e.audience === "privat");
-  const sichtbare = ansicht === "klasse" ? klasseEintraege : privatEintraege;
+
+  // Ohne eigene Wahl wird der Reiter gezeigt, der etwas enthält. Sonst
+  // wirkte ein gerade gespeicherter privater Eintrag wie verschwunden.
+  const gewaehlt: Ansicht =
+    ansicht ??
+    (klasseEintraege.length === 0 && privatEintraege.length > 0
+      ? "privat"
+      : "klasse");
+  const sichtbare = gewaehlt === "klasse" ? klasseEintraege : privatEintraege;
 
   return (
     <AppShell
@@ -234,8 +242,8 @@ export default function StundePage() {
       <div className="mt-8">
         <Segmented
           label="Inhalte filtern"
-          value={ansicht}
-          onChange={setAnsicht}
+          value={gewaehlt}
+          onChange={setAnsichtRoh}
           options={[
             { value: "klasse", label: `Klasse (${klasseEintraege.length})` },
             { value: "privat", label: `Privat (${privatEintraege.length})` },
@@ -246,7 +254,7 @@ export default function StundePage() {
       <div className="mt-4">
         {sichtbare.length === 0 ? (
           <div className="card px-6 py-6">
-            {ansicht === "klasse" ? (
+            {gewaehlt === "klasse" ? (
               <>
                 <p className="t-title">
                   Für diese Stunde wurde noch nichts festgehalten
@@ -267,7 +275,9 @@ export default function StundePage() {
           </div>
         ) : (
           <GroupedList
-            label={ansicht === "klasse" ? "Inhalte der Klasse" : "Private Inhalte"}
+            label={
+              gewaehlt === "klasse" ? "Inhalte der Klasse" : "Private Inhalte"
+            }
           >
             {sichtbare.map((entry) => (
               <EintragZeile key={entry.id} entry={entry} />
@@ -332,6 +342,9 @@ export default function StundePage() {
       <QuickCapture
         open={erfassen}
         onClose={() => setErfassen(false)}
+        onSaved={(audience) =>
+          setAnsichtRoh(audience === "privat" ? "privat" : "klasse")
+        }
         defaultLessonId={lesson.id}
         candidateBlocks={[
           {
