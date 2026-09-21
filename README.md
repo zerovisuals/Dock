@@ -17,20 +17,88 @@ Wochenbeginn Montag, 24-Stunden-Zeiten.
 
 ## Starten
 
+Du brauchst **Node 20 oder neuer**. Sonst nichts – keine Datenbank, keine
+Zugangsdaten, kein Konto.
+
 ```sh
 npm install
 npm run dev        # http://localhost:3000
 ```
 
-Weitere Befehle:
+Beim ersten Start landest du auf `/willkommen`. Der Ablauf ist überspringbar;
+der Stundenplan ist ohnehin schon aktiv.
+
+### Der eine Handgriff: Schriften
+
+Die gelieferten Plain-Dateien sind **nicht im Repository**, solange die
+Webfont-Lizenz nicht geklärt ist. Nach einem frischen Klon fehlen sie also.
+
+```sh
+mkdir -p assets/fonts-unlicensed
+# die gelieferten .woff2-Dateien dort hineinkopieren
+npm run schriften
+```
+
+`npm run dev` und `npm run build` rufen das von selbst mit auf. Fehlen die
+Dateien, sagt das Skript welche – und Dock läuft mit der Systemschrift
+weiter. Es bricht nie deswegen ab.
+
+### Selbst ausprobieren
+
+Heute ist vielleicht Wochenende oder Abend, dann ist der Plan zu Recht leer.
+Für einen echten Schultag stell die Vorschau-Uhr:
+
+```
+http://localhost:3000/app?vorschau=2026-09-22T09:15   # Dienstag, 2. Stunde
+http://localhost:3000/app?vorschau=aus                # wieder echte Zeit
+```
+
+Sie ist oben immer sichtbar gekennzeichnet und ändert nur die Anzeige.
+
+Ein guter Rundgang:
+
+1. **Heute** – laufende Stunde mit Fortschritt, danach der Tagesplan.
+2. Auf eine Stunde tippen → **Erfassen** → *Hausübung*, Text eingeben.
+   Unter „Fällig“ steht die vorgeschlagene nächste Stunde mit Datum.
+3. Die Seite **neu laden** – alles ist noch da.
+4. In der Zielstunde auf **Ändern** → *Stunde entfällt*. Zurück zu
+   **Aufgaben**: die Fälligkeit ist auf die nächste Stunde gewandert und der
+   Wechsel steht dabei.
+5. **Erfassen → Datei** anhängen, danach in der Stunde öffnen, ansehen,
+   herunterladen oder löschen.
+6. **Einstellungen** – Zahlen zu deinen Daten, Export, Erscheinungsbild,
+   Einladungen, alles löschen.
+
+### Prüfen
 
 ```sh
 npm run typecheck  # TypeScript, strikt
 npm run test       # 71 fachliche Tests
 npm run build      # Produktionsbau
-npm run review     # Screenshots und mechanische Prüfung, dev-Server muss laufen
-npm run check      # typecheck + test + build
+npm run check      # alle drei nacheinander
 ```
+
+Mit laufendem `npm run dev` zusätzlich:
+
+```sh
+npm run review     # Screenshots bei 360/430/768/1440, hell und dunkel
+npm run ablauf     # der komplette Ablauf im echten Browser, 15 Schritte
+```
+
+Die Aufnahmen landen in `screenshots/`, die Befunde in
+`screenshots/befunde.json`.
+
+### Auf dem Handy testen
+
+Im selben WLAN, mit der Adresse, die `npm run dev` unter „Network“ ausgibt:
+
+```
+http://192.168.x.x:3000
+```
+
+Zum Installieren auf dem Startbildschirm: in Safari auf „Teilen“ → „Zum
+Home-Bildschirm“. **Einen Service Worker gibt es noch nicht**, Dock läuft
+also noch nicht offline.
 
 ### Wege
 

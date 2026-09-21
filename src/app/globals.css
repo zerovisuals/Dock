@@ -106,6 +106,10 @@
     0 8px 20px rgba(47, 107, 224, 0.24);
 
   --gradient-accent: linear-gradient(180deg, #4c8dff 0%, #2f6be0 100%);
+
+  /* Die Kante einer Karte. Sehr schwach – sie soll die Form halten, nicht
+     als Rahmen auffallen. */
+  --hairline-card: rgba(11, 15, 20, 0.055);
 }
 
 /* --------------------------------------------------------------------------
@@ -156,6 +160,7 @@
       0 8px 20px rgba(76, 141, 255, 0.26);
 
     --gradient-accent: linear-gradient(180deg, #5b9aff 0%, #3a74e8 100%);
+    --hairline-card: rgba(255, 255, 255, 0.07);
   }
 }
 
@@ -190,6 +195,7 @@
   --shadow-accent:
     0 2px 6px rgba(76, 141, 255, 0.28), 0 8px 20px rgba(76, 141, 255, 0.26);
   --gradient-accent: linear-gradient(180deg, #5b9aff 0%, #3a74e8 100%);
+  --hairline-card: rgba(255, 255, 255, 0.07);
 }
 
 /* --------------------------------------------------------------------------
@@ -256,6 +262,15 @@ textarea {
    kleine Grade offen.
    -------------------------------------------------------------------------- */
 
+h1,
+h2,
+h3,
+.t-display,
+.t-section,
+.t-title {
+  text-wrap: balance;
+}
+
 .t-display {
   font-family: var(--font-display);
   font-size: clamp(2.5rem, 9vw, 3.75rem);
@@ -316,6 +331,7 @@ textarea {
   font-size: 0.9375rem;
   line-height: 1.5;
   color: var(--ink-body);
+  text-wrap: pretty;
 }
 
 .t-small {
@@ -350,19 +366,25 @@ textarea {
 .card {
   background: var(--surface);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-md);
+  box-shadow:
+    0 0 0 1px var(--hairline-card),
+    var(--shadow-md);
 }
 
 .card-flat {
   background: var(--surface);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-sm);
+  box-shadow:
+    0 0 0 1px var(--hairline-card),
+    var(--shadow-sm);
 }
 
 .card-raised {
   background: var(--surface);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-lg);
+  box-shadow:
+    0 0 0 1px var(--hairline-card),
+    var(--shadow-lg);
 }
 
 .sunken {
@@ -404,6 +426,12 @@ textarea {
 }
 .btn:active {
   transform: scale(0.975);
+  box-shadow: var(--shadow-xs);
+}
+.btn-primary:active {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 1px 4px rgba(47, 107, 224, 0.3);
 }
 .btn[disabled],
 .btn[aria-disabled="true"] {
@@ -415,7 +443,9 @@ textarea {
 .btn-primary {
   background-image: var(--gradient-accent);
   color: var(--on-accent);
-  box-shadow: var(--shadow-accent);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.26),
+    var(--shadow-accent);
 }
 .btn-primary:hover {
   filter: brightness(1.05);
@@ -728,4 +758,21 @@ time,
 .onb-dot[data-active="true"] {
   width: 24px;
   background-image: var(--gradient-accent);
+}
+
+/* Zeilen einer Gruppe geben beim Zeigen und beim Druck Rückmeldung. */
+@media (pointer: fine) {
+  .dock-divided > a:hover,
+  .dock-divided > button:hover {
+    background-color: color-mix(
+      in srgb,
+      var(--ink) 3%,
+      transparent
+    ) !important;
+  }
+}
+
+.dock-divided > a:active,
+.dock-divided > button:active {
+  background-color: color-mix(in srgb, var(--ink) 5%, transparent) !important;
 }

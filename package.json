@@ -4,14 +4,16 @@
   "private": true,
   "description": "Dock — Schulorganizer: Stundenplan, Notizen, Aufgaben und Klassengedächtnis.",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "npm run schriften --silent && next dev",
+    "schriften": "node scripts/schriften-einrichten.mjs",
+    "build": "npm run schriften --silent && next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "review": "node scripts/visual-review.mjs",
+    "ablauf": "node scripts/ablauf-pruefen.mjs",
     "check": "npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {

@@ -25,7 +25,7 @@ import {
 import { IconChevronLeft, IconSearch } from "@/ui/icons";
 import { useDock } from "@/data/DockContext";
 import { courseOf, currentVersion } from "@/data/store";
-import { formatFileSize } from "@/data/repository";
+import { DateiListe } from "@/ui/DateiListe";
 import type { Entry } from "@/domain/types";
 import {
   compareDates,
@@ -202,24 +202,10 @@ export default function KursPage() {
       {kursDateien.length > 0 && begriff === "" && (
         <>
           <SectionTitle>Unterlagen des Kurses</SectionTitle>
-          <GroupedList label="Unterlagen des Kurses">
-            {kursDateien.map((dokument) => (
-              <div key={dokument.id} className="flex items-center gap-4 px-5 py-4">
-                <div className="min-w-0 flex-1">
-                  <p
-                    className="truncate text-[0.9375rem] font-semibold"
-                    style={{ color: "var(--ink)" }}
-                  >
-                    {dokument.name}
-                  </p>
-                  <p className="t-caption mt-0.5">
-                    {formatFileSize(dokument.sizeBytes)}
-                  </p>
-                </div>
-                <AudienceBadge audience={dokument.audience} />
-              </div>
-            ))}
-          </GroupedList>
+          <DateiListe
+            dokumente={kursDateien}
+            label="Unterlagen des Kurses"
+          />
           <p className="t-caption mt-2">
             Unterlagen auf Kursebene gehören zu keiner bestimmten Stunde.
           </p>

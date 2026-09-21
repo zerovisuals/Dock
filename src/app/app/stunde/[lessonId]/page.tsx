@@ -37,8 +37,8 @@ import {
 } from "@/data/store";
 import { QuickCapture } from "@/ui/QuickCapture";
 import { StundeBearbeiten } from "@/ui/StundeBearbeiten";
-import { formatFileSize } from "@/data/repository";
 import { KlassenEintragFuss } from "@/ui/KlassenEintrag";
+import { DateiListe } from "@/ui/DateiListe";
 import type { Entry } from "@/domain/types";
 import {
   compareDates,
@@ -289,24 +289,7 @@ export default function StundePage() {
       {dateien.length > 0 && (
         <div className="mt-8">
           <h2 className="t-title mb-3">Dateien</h2>
-          <GroupedList label="Dateien dieser Stunde">
-            {dateien.map((dokument) => (
-              <div key={dokument.id} className="flex items-center gap-4 px-5 py-4">
-                <div className="min-w-0 flex-1">
-                  <p
-                    className="truncate text-[0.9375rem] font-semibold"
-                    style={{ color: "var(--ink)" }}
-                  >
-                    {dokument.name}
-                  </p>
-                  <p className="t-caption mt-0.5">
-                    {formatFileSize(dokument.sizeBytes)}
-                  </p>
-                </div>
-                <AudienceBadge audience={dokument.audience} />
-              </div>
-            ))}
-          </GroupedList>
+          <DateiListe dokumente={dateien} label="Dateien dieser Stunde" />
         </div>
       )}
 
