@@ -43,6 +43,17 @@ for (const size of SIZES) {
     timezoneId: "Europe/Vienna",
     reducedMotion: "no-preference",
   });
+  // Der Willkommensablauf wird beim allerersten Start angeboten und würde
+  // sonst jede App-Route auf den Auftritt umleiten – geprüft würde dann
+  // nur noch dieser eine Schirm.
+  await context.addInitScript(() => {
+    try {
+      window.localStorage.setItem("dock:willkommen", "1");
+    } catch {
+      // Ohne lokalen Speicher bleibt es bei der Umleitung.
+    }
+  });
+
   const page = await context.newPage();
 
   const consoleErrors = [];
